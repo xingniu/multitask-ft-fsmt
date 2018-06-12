@@ -2,7 +2,7 @@
 Multi-Task Neural Models for Translating Between Styles Within and Across Languages -- Formality Transfer (FT) and Formality-Sensitive Machine Translation (FSMT).
 
 This repository contains implementations for
-- Xing Niu, Sudha Rao, and Marine Carpuat. "[Multi-Task Neural Models for Translating Between Styles Within and Across Languages](http://xingniu.org/pub/multitaskftfsmt_coling18)". COLING 2018.
+- Xing Niu, Sudha Rao, and Marine Carpuat. "[Multi-Task Neural Models for Translating Between Styles Within and Across Languages](http://xingniu.org/pub/multitaskftfsmt_coling18.pdf)". COLING 2018.
 ```
 @InProceedings{niu-rao-carpuat:2018:COLING2018,
   author    = {Niu, Xing  and  Rao, Sudha  and  Carpuat, Marine},
