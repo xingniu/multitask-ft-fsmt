@@ -93,12 +93,12 @@ if [ ! -f $test_dir/test.trans.detok ]; then
 	echo " * Post-processing $test_dir/test.trans ..."
 	if [[ $detruecase == False ]]; then
 		cat $test_dir/test.trans \
-			| perl -pe 's/@@ //g' 2>/dev/null \
+			| sed -r 's/(@@ )|(@@ ?$)//g' 2>/dev/null \
 			| $moses_scripts_path/tokenizer/detokenizer.perl -q -l en 2>/dev/null \
 			> $test_dir/test.trans.detok
 	else
 		cat $test_dir/test.trans \
-			| perl -pe 's/@@ //g' 2>/dev/null \
+			| sed -r 's/(@@ )|(@@ ?$)//g' 2>/dev/null \
 			| $moses_scripts_path/recaser/detruecase.perl 2>/dev/null \
 			| $moses_scripts_path/tokenizer/detokenizer.perl -q -l en 2>/dev/null \
 			> $test_dir/test.trans.detok
