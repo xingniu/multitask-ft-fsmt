@@ -37,15 +37,16 @@ make -j 4
 # - Tokenize data using:
 #   moses-scripts/tokenizer/normalize-punctuation.perl -l en | moses-scripts/tokenizer/tokenizer.perl -l en -a -no-escape
 # - Concatenate four tune-ref pairs to build the complete dev set
-#   e.g. source=tune+tune+tune+tune
-#        target=ref0+ref1+ref2+ref3
+#   e.g. to build the dev set for formal->informal:
+#        source=formal       +formal       +formal       +formal        (copy four times)
+#        target=informal.ref0+informal.ref1+informal.ref2+informal.ref3 (concatenate four refs)
 # Put files into data/
 # - data/GYAFC.train.tok.formal
 # - data/GYAFC.train.tok.informal
-# - data/GYAFC.dev-to-formal.tok.formal (dev set, informal->formal)
-# - data/GYAFC.dev-to-formal.tok.informal
-# - data/GYAFC.dev-to-informal.tok.formal (dev set, formal->informal)
-# - data/GYAFC.dev-to-informal.tok.informal
+# - data/GYAFC.dev-to-formal.tok.formal     (target of the dev set, informal->formal)
+# - data/GYAFC.dev-to-formal.tok.informal   (source of the dev set, informal->formal)
+# - data/GYAFC.dev-to-informal.tok.formal   (source of the dev set, formal->informal)
+# - data/GYAFC.dev-to-informal.tok.informal (target of the dev set, formal->informal)
 
 # === Downloading cleaned OpenSubtitles2016 parallel data (train/dev/test)
 cd $root_dir/data
