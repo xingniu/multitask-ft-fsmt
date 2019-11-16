@@ -2,7 +2,7 @@
 ## Introduction
 **Le**xical and **Po**sitional **D**ifferences (LePoD) score is used to quantify the surface differences between paraphrases.
 
-| ![LePod](lepod.png) |
+| <img src="lepod.png" alt="A LePoD example" width="500"> |
 |-|
 | Comparing S1 and S2 with LePoD: hollow circles represent non-exact matched tokens, yielding a LeD score of ![LeD](https://latex.codecogs.com/svg.latex?%5Cinline%20%5Csmall%20%28%5Cfrac%7B7%7D%7B15%7D&plus;%5Cfrac%7B4%7D%7B12%7D%29%5Ctimes%5Cfrac%7B1%7D%7B2%7D%3D0.4). Given the alignment illustrated above, the PoD score is ![PoD](https://latex.codecogs.com/svg.latex?%5Cinline%20%5Csmall%20%5Cfrac%7B0&plus;3&plus;2&plus;0%7D%7B10%7D%3D0.5). |
 
