@@ -1,122 +1,114 @@
 #!/bin/bash
 
-root_dir=`dirname $0`/..
-test_dir=$root_dir/test
-mkdir $test_dir
-
-### Parameters
-test_src=$test_dir/GYAFC.test-to-formal.tok.informal # GYAFC test data should be tokenized.
-test_ref=$test_dir/GYAFC.test-to-formal.formal
-test_ref_num=4
-tgt_tag=formal
-mt_models_dir=$root_dir/experiments/iter-1
-tc_model=$mt_models_dir/data/tc.en
-bpe_model=$mt_models_dir/data/bpe.en
-# test_src=$root_dir/data/OpenSubtitles2016/OpenSubtitles2016.en-fr.test-2500.tok.fr
-# test_ref=$root_dir/data/OpenSubtitles2016/OpenSubtitles2016.en-fr.test-2500.en
-# test_ref_num=1
-# tgt_tag=formal
-# mt_models_dir=$root_dir/experiments/iter-2-fix-12/exp-random-fine-tuning
-# tc_model=$mt_models_dir/data/tc
-# bpe_model=$mt_models_dir/data/bpe
-
-ensemble=True
-gpu_id=0
-
-if [[ $ensemble == True ]]; then
-	run_n=4
-else
-	run_n=1
-fi;
-if [[ $tgt_tag == formal ]] || [[ $test_ref_num == 1 ]]; then
-	detruecase=True
-else
-	detruecase=False
-fi;
-
-## software bits
-moses_scripts_path=$root_dir/moses-scripts
-bpe_scripts_path=$root_dir/subword-nmt/subword_nmt
-sacrebleu_path=$root_dir/sockeye/contrib/sacrebleu
-
-# Pre-processing test data
-if [ ! -f $test_dir/test.tc ]; then
-	echo " * True-casing $test_src ..."
-	$moses_scripts_path/recaser/truecase.perl \
-		-model $tc_model                       \
-		< $test_src                             \
-		> $test_dir/test.tc
-fi;
-if [ ! -f $test_dir/test.tc.bpe ]; then
-	echo " * Applying BPE to $test_dir/test.tc ..."
-	python2 $bpe_scripts_path/apply_bpe.py \
-		--codes $bpe_model                  \
-		< $test_dir/test.tc                  \
-		> $test_dir/test.tc.bpe
-fi;
-if [ ! -f $test_dir/test.src ]; then
-	echo " * Adding language tags to $test_dir/test.tc.bpe ..."
-	cat $test_dir/test.tc.bpe    \
-		| sed "s/^/<2$tgt_tag> /" \
-		> $test_dir/test.src
-fi;
-
-# Ensemble decoding
-model_list=""
-for i in $(seq 1 $run_n); do
-	model_list="$model_list $mt_models_dir/model-$i"
-	if [ ! -f $mt_models_dir/model-$i/params.bleu-1 ]; then
-		python3 -m sockeye.average \
-			-n 1          \
-			--metric bleu  \
-			--strategy best \
-			--output $mt_models_dir/model-$i/params.bleu-1 \
-			$mt_models_dir/model-$i
+# Pre-processing the test data
+for i in $(seq 1 $test_number); do
+	eval test_src='$'test_src_$i
+	eval test_src_lang='$'test_src_lang_$i
+	if [ ! -f $sub_data_dir/test_$i.tok.tc.bpe ]; then
+		echo " * True-casing and applying BPE to $test_src ..."
+		cat $test_src \
+			| $moses_scripts_path/recaser/truecase.perl -model $global_data_dir/tc.$pp_vocab.$test_src_lang \
+			| python $bpe_scripts_path/apply_bpe.py --codes $global_data_dir/bpe.$pp_vocab \
+			> $sub_data_dir/test_$i.tok.tc.bpe
 	fi;
-	ln -srf $mt_models_dir/model-$i/params.bleu-1 $mt_models_dir/model-$i/params.best
+	
+	eval test_ref_tag='$'test_ref_tag_$i
+	if [ ! -f $sub_data_dir/test_$i.src ]; then
+		if [[ $style_model == tag* ]]; then
+			if [[ $test_ref_tag == unk ]] && [[ $unk_tag != True ]]; then
+				ln -srf $sub_data_dir/test_$i.tok.tc.bpe $sub_data_dir/test_$i.src
+			else
+				echo " * Adding language tags to $sub_data_dir/test_$i.tok.tc.bpe ..."
+				cat $sub_data_dir/test_$i.tok.tc.bpe | sed "s/^/<2$test_ref_tag> /" > $sub_data_dir/test_$i.src
+			fi;
+		else
+			ln -srf $sub_data_dir/test_$i.tok.tc.bpe $sub_data_dir/test_$i.src
+		fi;
+		if [[ $style_model == *factor* ]] || [[ $style_model == *decoder* ]] || [[ $style_model == block* ]]; then
+			echo " * Creating language factors to $sub_data_dir/test_$i.tok.tc.bpe ..."
+			cat $sub_data_dir/test_$i.tok.tc.bpe | sed "s/[^ ]\+/<2$test_ref_tag>/g" > $sub_data_dir/test_$i.src.factor
+		fi;
+	fi;
 done;
 
-if [ ! -f $test_dir/test.trans ]; then
-	python3 -m sockeye.translate    \
-		--input $test_dir/test.src   \
-		--output $test_dir/test.trans \
-		--models $model_list  \
-		--ensemble-mode linear \
-		--beam-size 5   \
-		--batch-size 16  \
-		--chunk-size 1024 \
-		--device-ids $gpu_id
-fi;
+if [[ $no_eval != True ]]; then
+	for avg_metric in $avg_metric_list; do
+		for ti in $(seq 1 $test_number); do
+			decode_data_in=$sub_data_dir/test_$ti.src
+			eval test_ref='$'test_ref_$ti
+			eval test_ref_num='$'test_ref_num_$ti
+			eval test_ref_tag='$'test_ref_tag_$ti
+			
+			bleu_list=""
+			meteor_list=""
+			for mi in $(seq $run_start $run_end); do
+				model_dir=$model_exp_dir/model-$mi
+				decode_dir=$exp_dir/decode-$mi/$avg_metric
+				mkdir -p $decode_dir
+				decode_data_out=$decode_dir/test_$ti.trans
+				
+				## Generating parameters for model-$mi
+				if [ ! -f $decode_dir/params ]; then
+					python -m sockeye.average -n 1 \
+						--metric $avg_metric \
+						--strategy best       \
+						--output $decode_dir/params \
+						$model_dir
+				fi;
+				ln -srf $decode_dir/params $model_dir/params.best
 
-# Post-processing translations
-if [ ! -f $test_dir/test.trans.detok ]; then
-	echo " * Post-processing $test_dir/test.trans ..."
-	if [[ $detruecase == False ]]; then
-		cat $test_dir/test.trans \
-			| sed -r 's/(@@ )|(@@ ?$)//g' 2>/dev/null \
-			| $moses_scripts_path/tokenizer/detokenizer.perl -q -l en 2>/dev/null \
-			> $test_dir/test.trans.detok
-	else
-		cat $test_dir/test.trans \
-			| sed -r 's/(@@ )|(@@ ?$)//g' 2>/dev/null \
-			| $moses_scripts_path/recaser/detruecase.perl 2>/dev/null \
-			| $moses_scripts_path/tokenizer/detokenizer.perl -q -l en 2>/dev/null \
-			> $test_dir/test.trans.detok
-	fi;
-fi;
-
-# Evaluation
-if [ ! -f $test_dir/bleu.log ]; then
-	if (( $test_ref_num == 4 )); then
-		python3 $sacrebleu_path/sacrebleu.py \
-			${test_ref}0 ${test_ref}1 ${test_ref}2 ${test_ref}3 \
-			< $test_dir/test.trans.detok \
-			> $test_dir/bleu.log
-	else
-		python3 $sacrebleu_path/sacrebleu.py \
-			$test_ref \
-			< $test_dir/test.trans.detok \
-			> $test_dir/bleu.log
-	fi;
-	cat $test_dir/bleu.log
+				## Decoding for model-$mi
+				ensemble_mode=False
+				. `dirname $0`/sockeye-decode-parallel.sh
+				
+				## Evaluating model-$mi
+				bleu_log=$decode_dir/bleu.test_$ti.log
+				bleu_list="$bleu_list $bleu_log"
+				summary_log=$exp_dir/decode-$mi/bleu.test_$ti.log
+				if [ ! -f $bleu_log ]; then
+					echo "best $avg_metric" >> $summary_log
+				fi;
+				statistics_on=False
+				. `dirname $0`/evaluate-bleu.sh
+			done;
+			if [[ $ensemble == True ]]; then
+				decode_dir=$exp_dir/decode-ensemble/$avg_metric
+				mkdir -p $decode_dir
+				decode_data_out=$decode_dir/test_$ti.trans
+				
+				## Ensemble decoding
+				model_list=""
+				for mi in $(seq $run_start $run_end); do
+					model_list="$model_list $model_exp_dir/model-$mi"
+				done;
+				ensemble_mode=True
+				. `dirname $0`/sockeye-decode-parallel.sh
+				
+				## Evaluating the result of ensemble decoding
+				bleu_log=$decode_dir/bleu.test_$ti.log
+				summary_log=$exp_dir/bleu-ensemble.test_$ti.log
+				if [ ! -f $bleu_log ]; then
+					echo "--- best $avg_metric ($run_end models)" >> $summary_log
+					echo "- ensemble" >> $summary_log
+				fi;
+				statistics_on=True
+				. `dirname $0`/evaluate-bleu.sh
+			fi;
+		done;
+	done;
+	
+	for ti in $(seq 1 $test_number); do
+		echo ""
+		eval test_ref_tag='$'test_ref_tag_$ti
+		eval test_ref='$'test_ref_$ti
+		echo "TEST-$ti TAG=$test_ref_tag REF=$test_ref"
+		if [[ $ensemble != True ]]; then
+			for mi in $(seq $run_start $run_end); do
+				echo "=== Model-$mi ==="
+				cat $exp_dir/decode-$mi/bleu.test_$ti.log
+			done;
+		elif [[ $ensemble == True ]]; then
+			cat $exp_dir/bleu-ensemble.test_$ti.log
+		fi;
+	done;
 fi;
