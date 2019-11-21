@@ -40,7 +40,6 @@ if [[ $no_eval != True ]]; then
 			eval test_ref_tag='$'test_ref_tag_$ti
 			
 			bleu_list=""
-			meteor_list=""
 			for mi in $(seq $run_start $run_end); do
 				model_dir=$model_exp_dir/model-$mi
 				decode_dir=$exp_dir/decode-$mi/$avg_metric

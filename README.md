@@ -1,4 +1,4 @@
-# Multi-Task Neural Models for FSMT and FT
+# Multi-Task Neural Models for FT and FSMT
 Multi-Task Neural Models for Translating Between Styles Within and Across Languages:
 - Formality Transfer (FT)
 - Formality-Sensitive Machine Translation (FSMT)
@@ -16,7 +16,7 @@ Read and follow the instructions in [setup.sh](setup.sh) to obtain the necessary
 #### Machine Translation Models
 
 | <br>Model<br>&nbsp; | WMT<br>Informal<br>BLEU | WMT<br>Formal<br>BLEU | WMT<br><br>LeD | WMT<br><br>PoD | MSLT<br>Informal<br>BLEU | MSLT<br>Formal<br>BLEU | MSLT<br><br>LeD | MSLT<br><br>PoD |
-|---------------------|------------------------:|----------------------:|---------------:|---------------:|-------------------------:|-----------------------:|----------------:|---------------------:|
+|-------------------------|------:|------:|------:|------:|------:|------:|------:|-----:|
 | NMT                     | 28.63 | 28.63 |     0 |     0 | 47.83 | 47.83 |     0 |    0 |
 | NMT DS-Tag              | 28.24 | 28.95 |  9.27 |  6.44 | 47.60 | 47.24 |  8.18 | 1.10 |
 | Multi-Task              | 27.75 | 28.39 | 10.89 |  7.76 | 47.55 | 45.08 | 11.97 | 1.41 |
@@ -41,8 +41,8 @@ Online Style Inference
 
 #### Formality Transfer Benchmark Models
 
-| Model | TYPE (cmd) | Informal->Formal | Formal->Informal | Informal->Informal | Formal->Formal |
-|-------|------------|-----------------:|-----------------:|-------------------:|---------------:|
+| Model | TYPE (cmd) | Informal<br>->Formal | Formal<br>->Informal | Informal<br>->Informal | Formal<br>->Formal |
+|---------------|----------------|-------------:|-------------:|-------------:|-------------:|
 | None          | none           | 70.63 ± 0.23 | 37.00 ± 0.18 | 54.54 ± 0.44 | 58.98 ± 0.93 |
 | Tag-Src       | tag-src        | 72.16 ± 0.34 | 37.67 ± 0.11 | 66.87 ± 0.58 | 78.78 ± 0.37 |
 | Tag-Src-Block | block-tag-src  | 72.00 ± 0.05 | 37.38 ± 0.12 | 65.46 ± 0.29 | 76.72 ± 0.39 |
