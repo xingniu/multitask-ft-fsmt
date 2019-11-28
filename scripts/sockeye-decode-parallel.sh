@@ -61,7 +61,6 @@ if [ ! -f $decode_data_out ]; then
 					--chunk-size 1024       \
 					--disable-device-locking \
 					--device-ids $gpu_i ) &
-				  # cp $decode_data_in_tmp_dir/input.$chunk_i $decode_data_out_tmp_dir/output.$chunk_i ) &
 			fi;
 		done;
 	done;
@@ -81,6 +80,4 @@ if [ ! -f $decode_data_out ]; then
 		echo " * Decoding finished incorrectly."
 		exit;
 	fi;
-
-	# exit; # if parallel decoding uses different #GPUs
 fi;

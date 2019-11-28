@@ -6,7 +6,7 @@ Multi-Task Neural Models for Translating Between Styles Within and Across Langua
 
 This repository contains implementations for
 - Xing Niu, Sudha Rao, and Marine Carpuat. "[Multi-Task Neural Models for Translating Between Styles Within and Across Languages](http://xingniu.org/pub/multitaskftfsmt_coling18.pdf)". COLING 2018.
-- Xing Niu, and Marine Carpuat. "[Controlling Neural Machine Translation Formality with Synthetic Supervision](http://xingniu.org/pub/syntheticfsmt_aaai20.pdf)". AAAI 2020. ([Appendix](http://xingniu.org/pub/syntheticfsmt_aaai20_appendix.pdf))
+- Xing Niu, and Marine Carpuat. "[Controlling Neural Machine Translation Formality with Synthetic Supervision](http://xingniu.org/pub/syntheticfsmt_aaai20.pdf)". AAAI 2020.
 
 ## Usage Instructions
 

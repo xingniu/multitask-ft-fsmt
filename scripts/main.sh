@@ -8,7 +8,7 @@ sampling_loss_weight=0.05
 fine_tuning_lr=0.0001
 upsampling=10
 style_model=tag
-while getopts ":g:d:m:t:u:y:i:w:n" opt; do
+while getopts ":g:d:m:t:u:y:i:w:nh" opt; do
 	case $opt in
 	g)
 		gpus=$OPTARG ;;
@@ -36,9 +36,9 @@ while getopts ":g:d:m:t:u:y:i:w:n" opt; do
 		no_eval=True ;;
 	h)
 		echo "Usage: main.sh"
-		echo "-g GPU ids (e.g. 1,2,4)" #
-		echo "-d GPU id for decoding during training (e.g. 1)" #
-		echo "-m model id (positive int means id, negative int means ensemble size)" #
+		echo "-g GPU ids (e.g. 1,2,4)"
+		echo "-d GPU id for decoding during training (e.g. 1)"
+		echo "-m model id (positive int means id, negative int means ensemble size)"
 		echo "-t training data (transfer/translation/translation-unk-transfer/translation-unk-ds/translation-unk-transfer-ds)"
 		echo "-u upsampling ratio for the transfer data"
 		echo "-y style model (none/tag/tag-src/block-tag-src/factor-concat/factor-sum/decoder-bias/decoder-concat/decoder-sum/decoder-bos)"
